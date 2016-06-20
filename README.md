@@ -1,5 +1,5 @@
-# peanut
-**The IoT Squirrel Feeder**
+#**peanut - The IoT Squirrel Feeder**
+
 
 A project to validate the following assumption:
 
