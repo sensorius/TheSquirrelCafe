@@ -4,17 +4,13 @@ import subprocess
 import os
 import time
 
- 
-
 import RPi.GPIO as GPIO
 
- 
 
 BtnPin = 11
 Gpin = 12
 Rpin = 13
 
- 
 
 ds18b20 = '28-04162025b3ff'       # Device ID
 tweet_enabled = True              # Send tweet on twitter
@@ -31,7 +27,6 @@ def setup():
   GPIO.setup(Rpin, GPIO.OUT) # Set Red Led Pin mode to output
   GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP) # Set BtnPin's mode is input, and pull up to high level(3.3V)
   GPIO.add_event_detect(BtnPin, GPIO.BOTH, callback=detect, bouncetime=200)
-
   print 'Setup finished'
  
  
@@ -51,7 +46,6 @@ def set_led(x):
   if x == 0:
     GPIO.output(Rpin, 1)
     GPIO.output(Gpin, 0)
-
   if x == 1:
     GPIO.output(Rpin, 0)
     GPIO.output(Gpin, 1)
@@ -83,14 +77,13 @@ def send_tweet(x):
       lid_was_open_before = True
       peanut_count = peanut_count + 1
       is_eating_timestamp = time.time()
- 
+
       if is_eating == False:
         temp = read_temp()
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
         tweet_text = "#IoT - #Squirrel grabbing a nut from Parkaue Feeder right now. %s, current temperature: %0.1f C." % (trigger_time, temp) 
         send_a_tweet(tweet_text)
         is_eating = True
-
   # Lid is closed
   if x == 1:
     lid_was_open_before = False
@@ -116,7 +109,7 @@ def loop():
         is_eating = False
         send_tweet_eating_finished()
  
-    # Animation to indicate that feeder.py is running
+    # Blinking of LED to indicate feeder.py is running
     if time.localtime().tm_sec%2 == 0:
       GPIO.output(Rpin, 0)
       GPIO.output(Gpin, 1)
@@ -139,4 +132,6 @@ if __name__ == '__main__': # Program start from here
   try:
     loop()
   except KeyboardInterrupt: # When 'Ctrl+C' is pressed, the child program destroy() will be executed.
-    destroy() 
+    destroy()
+    
+    
