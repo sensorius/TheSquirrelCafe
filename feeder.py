@@ -78,7 +78,7 @@ def send_tweet(x):
       if is_eating == False:
         temp = read_temp()
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        tweet_text = "#IoT - #Squirrel grabbed a nut from Parkaue Feeder right now. \
+        tweet_text = "#IoT - #Squirrel grabbing a nut from Parkaue Feeder right now. \
 %s, current temperature: %0.1f C" % (trigger_time, temp) 
         send_a_tweet( tweet_text )
         is_eating = True
