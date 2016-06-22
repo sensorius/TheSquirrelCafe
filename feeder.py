@@ -12,7 +12,7 @@ Rpin = 13
 ds18b20 = '28-04162025b3ff'       # Device ID
 tweet_enabled = True              # Send tweet on twitter
 lid_was_open_before = False       # Only send tweets when lid is closed again
-is_eating = False                 # Squirrel status
+is_eating = False                 # Squirrel eating status
 is_eating_timestamp = time.time() # Set time of grabbing a bite
 peanut_count = 0                  # Counter for lid openings
 timeout_eating = 60               # Lid openings within x seconds belong to a chowing session
@@ -59,8 +59,14 @@ def send_tweet_eating_finished():
    global peanut_count
 
    trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
-   temp = read_temp()
-   tweet_text = "#IoT - #Squirrel chowed about %d nut(s) down at Ahrensburg Feeder. %s" % (peanut_count, trigger_time)
+   
+   # More than one nut?
+   if peant_count == 1:
+   	nut__text = "nut"
+   else:
+   	nut_text = "nuts"
+   	
+   tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder.\n%s" % (peanut_count, nut_text, trigger_time)
    send_a_tweet( tweet_text )
    peanut_count = 0
 
@@ -78,8 +84,7 @@ def send_tweet(x):
       if is_eating == False:
         temp = read_temp()
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now. \
-%s, current temperature: %0.1f C" % (trigger_time, temp) 
+        tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now.\n %s, temp: %0.1f C" % (trigger_time, temp) 
         send_a_tweet( tweet_text )
         is_eating = True
 
@@ -100,28 +105,23 @@ def loop():
 
   while True:
     if is_eating:
-      now_timestamp = time.time()
-      time_dif = now_timestamp - is_eating_timestamp
-      #print time_dif
-      if time_dif > timeout_eating:
+      # Check if lid had been closed for at least e.g. 60 secs
+      if (time.time()-is_eating_timestamp) > timeout_eating:
         is_eating = False
-        #print 'is_eating = False'
         send_tweet_eating_finished()
- 
+    # Blinking LED to indicate that script is running
     if time.localtime().tm_sec%2 == 0:
       GPIO.output(Rpin, 0)
       GPIO.output(Gpin, 1)
-      #print '0'
     else:
       GPIO.output(Rpin, 1)
       GPIO.output(Gpin, 0)
-      #print '1'
     pass
 
 
 def destroy():
-  GPIO.output(Gpin, GPIO.HIGH) # Green led off
-  GPIO.output(Rpin, GPIO.HIGH) # Red led off
+  GPIO.output(Gpin, GPIO.HIGH) # Green LED off
+  GPIO.output(Rpin, GPIO.HIGH) # Red LED off
   GPIO.cleanup() # Release resource
 
 
