@@ -61,12 +61,12 @@ def send_tweet_eating_finished():
    trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
    
    # More than one nut?
-   if peant_count == 1:
+   if peanut_count == 1:
    	nut__text = "nut"
    else:
    	nut_text = "nuts"
    	
-   tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder.\n%s" % (peanut_count, nut_text, trigger_time)
+   tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder. %s" % (peanut_count, nut_text, trigger_time)
    send_a_tweet( tweet_text )
    peanut_count = 0
 
@@ -84,7 +84,7 @@ def send_tweet(x):
       if is_eating == False:
         temp = read_temp()
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now.\n %s, temp: %0.1f C" % (trigger_time, temp) 
+        tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now. %s, T: %0.1f C" % (trigger_time, temp) 
         send_a_tweet( tweet_text )
         is_eating = True
 
