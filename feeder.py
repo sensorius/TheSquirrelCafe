@@ -53,10 +53,10 @@ def send_a_tweet(tweet_text):
   if tweet_enabled:
     tweet = "twitter set \"%s\"" % tweet_text
     subprocess.call(tweet, shell=True)
-    print tweet_text
+  print tweet_text
     
     
-def save_a_image()
+def save_a_image():
   cmd = "raspistill -o image.%s.jpg -t 200 -w 1024 -h 768" % time.strftime("%Y-%m-%d-%H-%M-%S")
   subprocess.Popen(cmd, shell=True)
 
@@ -72,11 +72,12 @@ def send_tweet_eating_finished():
    	nut__text = "nut"
    else:
    	nut_text = "nuts"
-   	
-   npm = peanut_count / (is_eating_timestamp - starts_eating_timestamp) * 60
-   	
-   tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
-   send_a_tweet( tweet_text )
+   
+   diff_time = is_eating_timestamp - starts_eating_timestamp	
+   if diff_time > 0:
+   	npm = peanut_count / diff_time * 60
+   	tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
+        send_a_tweet( tweet_text )
    peanut_count = 0
 
 
@@ -95,7 +96,7 @@ def send_tweet(x):
         starts_eating_timestamp = is_eating_timestamp
         
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now. %s, t=%0.1f[°C]" % (trigger_time, temp) 
+        tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now. %s, t=%0.1f[C]" % (trigger_time, temp) 
         save_a_image()
         send_a_tweet( tweet_text )
         is_eating = True
