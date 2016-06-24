@@ -75,7 +75,7 @@ def send_tweet_eating_finished():
 
 
 def send_tweet(x):
-  global lid_was_open_before, peanut_count, is_eating, is_eating_timestamp
+  global lid_was_open_before, peanut_count, is_eating, is_eating_timestamp, starts_eating_timestamp
 
   # Lid is open
   if x == 0:
@@ -86,6 +86,7 @@ def send_tweet(x):
       is_eating_timestamp = time.time()
       if is_eating == False:
         temp = read_temp()
+        starts_eating_timestamp = is_eating_timestamp
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
         tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now. %s, T: %0.1f C" % (trigger_time, temp) 
         send_a_tweet( tweet_text )
