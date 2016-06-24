@@ -14,6 +14,7 @@ tweet_enabled = True              # Send tweet on twitter
 lid_was_open_before = False       # Only send tweets when lid is closed again
 is_eating = False                 # Squirrel eating status
 is_eating_timestamp = time.time() # Set time of grabbing a bite
+starts_eating_timestamp = time.time() # First nut grabbed
 peanut_count = 0                  # Counter for lid openings
 timeout_eating = 60               # Lid openings within x seconds belong to a chowing session
 
@@ -66,7 +67,9 @@ def send_tweet_eating_finished():
    else:
    	nut_text = "nuts"
    	
-   tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder. %s" % (peanut_count, nut_text, trigger_time)
+   npm = peanut_count / (is_eating_timestamp - starts_eating_timestamp) * 60
+   	
+   tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder. Speed: %.2d [npm] %s" % (peanut_count, nut_text, npm, trigger_time)
    send_a_tweet( tweet_text )
    peanut_count = 0
 
