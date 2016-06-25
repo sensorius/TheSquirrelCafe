@@ -3,12 +3,14 @@
 
 import os
 import time
-
 import RPi.GPIO as GPIO
+import tweepy
+import subprocess
+from twitter_token import *  # File containing twitter app keys and tokens
 
 BtnPin = 11
-Gpin = 12
-Rpin = 13
+Gpin   = 12
+Rpin   = 13
 
 ds18b20 = '28-04162025b3ff'       # Device ID
 tweet_enabled = True              # Send tweet on twitter
@@ -18,15 +20,25 @@ is_eating_timestamp = time.time() # Set time of grabbing a bite
 starts_eating_timestamp = time.time() # First nut grabbed
 peanut_count = 0                  # Counter for lid openings
 timeout_eating = 60               # Lid openings within x seconds belong to a chowing session
-
+api = None
+image_file = None                 # File with feeder image captured
 
 def setup():
+  global api
   GPIO.setmode(GPIO.BOARD) # Numbers GPIOs by physical location
   GPIO.setup(Gpin, GPIO.OUT) # Set Green Led Pin mode to output
   GPIO.setup(Rpin, GPIO.OUT) # Set Red Led Pin mode to output
   GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP) # Set BtnPin's mode is input, and pull up to high level(3.3V)
   GPIO.add_event_detect(BtnPin, GPIO.BOTH, callback=detect, bouncetime=200)
-	
+  auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+  auth.secure = True
+  auth.set_access_token(access_token, access_token_secret)
+
+  api = tweepy.API(auth)
+
+  # If the authentication was successful, you should
+  # see the name of the account print out
+  print(api.me().name)	
   print 'Setup finished'
 
 
@@ -51,14 +63,24 @@ def set_led(x):
 
 
 def send_a_tweet(tweet_text):
+  global api
   if tweet_enabled:
-    tweet = "twitter set \"%s\"" % tweet_text
-    subprocess.call(tweet, shell=True)
+    api.update_status(status=tweet_text)
+    #subprocess.call(tweet, shell=True)
   print tweet_text
-    
+
+def send_a_tweet_with_image(tweet_text):
+  global api, image_file
+  if tweet_enabled:
+    api.update_with_media(image_file, status=tweet_text)
+
+  print tweet_text    
     
 def save_a_image():
-  cmd = "raspistill -o image.%s.jpg -t 200 -w 1024 -h 768" % time.strftime("%Y-%m-%d-%H-%M-%S")
+  global image_file
+
+  image_file = "feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
+  cmd = "raspistill -o %s -t 200 -w 1024 -h 768 --hflip --vflip" % image_file
   subprocess.Popen(cmd, shell=True)
 
 
@@ -78,7 +100,7 @@ def send_tweet_eating_finished():
    if diff_time > 0:
    	npm = peanut_count / diff_time * 60
    	tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
-        send_a_tweet( tweet_text )
+        send_a_tweet_with_image( tweet_text )
    peanut_count = 0
 
 
