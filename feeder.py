@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import subprocess
+# -*- coding: utf-8 -*-
+
 import os
 import time
 
@@ -126,9 +127,11 @@ def loop():
     if time.localtime().tm_sec%2 == 0:
       GPIO.output(Rpin, 0)
       GPIO.output(Gpin, 1)
+      print '\rX0',
     else:
       GPIO.output(Rpin, 1)
       GPIO.output(Gpin, 0)
+      print '\r0X',
     pass
 
 
