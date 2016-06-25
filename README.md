@@ -9,8 +9,8 @@ A project to validate the following assumption:
 The IoT Squirrel Feeder's homepage:
 http://bit.ly/iotsquirrel
 
-Twitter Lib used (Python Twitter Tools):
-http://mike.verdone.ca/twitter/
+Tweepy - The python twitter lib used:
+http://www.tweepy.org
 
 Raspberry Pi Cam Info:
 https://www.raspberrypi.org/blog/camera-board-available-for-sale/
