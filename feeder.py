@@ -65,6 +65,7 @@ def set_led(x):
 def send_a_tweet(tweet_text):
   global api
   if tweet_enabled:
+    tweet_text = tweet_text + ' - RaspberryPi powered.'
     api.update_status(status=tweet_text)
     #subprocess.call(tweet, shell=True)
   print tweet_text
@@ -72,6 +73,7 @@ def send_a_tweet(tweet_text):
 def send_a_tweet_with_image(tweet_text):
   global api, image_file
   if tweet_enabled:
+    tweet_text = tweet_text + ' - RaspberryPi powered.'
     api.update_with_media(image_file, status=tweet_text)
 
   print tweet_text    
@@ -80,7 +82,7 @@ def save_a_image():
   global image_file
 
   image_file = "feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
-  cmd = "raspistill -o %s -t 200 -w 1024 -h 768 --hflip --vflip" % image_file
+  cmd = "raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
   subprocess.Popen(cmd, shell=True)
 
 
@@ -88,7 +90,7 @@ def save_a_image():
 def send_tweet_eating_finished():
    global peanut_count
 
-   trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
+   trigger_time = time.strftime("%H:%M:%S UTC+2")
    
    # More than one nut?
    if peanut_count == 1:
@@ -99,7 +101,7 @@ def send_tweet_eating_finished():
    diff_time = is_eating_timestamp - starts_eating_timestamp	
    if diff_time > 0:
    	npm = peanut_count / diff_time * 60
-   	tweet_text = "#IoT - #Squirrel chowed about %d %s down at Ahrensburg Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
+   	tweet_text = "#IoT - #Squirrel chowed %d %s down at Ahrensburg Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
         send_a_tweet_with_image( tweet_text )
    peanut_count = 0
 
