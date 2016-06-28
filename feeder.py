@@ -99,9 +99,9 @@ def send_tweet_eating_finished():
    	nut_text = "nuts"
    
    diff_time = is_eating_timestamp - starts_eating_timestamp	
-   if diff_time > 0:
-   	npm = peanut_count / diff_time * 60
-   	tweet_text = "#IoT - #Squirrel chowed %d %s down at Ahrensburg Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
+   if diff_time > 0 and peanut_count > 1:
+   	npm = (peanut_count-1) / diff_time * 60
+   	tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
         send_a_tweet_with_image( tweet_text )
    peanut_count = 0
 
@@ -121,7 +121,7 @@ def send_tweet(x):
         starts_eating_timestamp = is_eating_timestamp
         
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        tweet_text = "#IoT - #Squirrel grabbing a nut from Ahrensburg Feeder right now. %s, t=%0.1f[C]" % (trigger_time, temp) 
+        tweet_text = "#Squirrel grabbing a nut from #IoT Feeder right now. %s, t=%0.1f[C]" % (trigger_time, temp) 
         save_a_image()
         send_a_tweet( tweet_text )
         is_eating = True
