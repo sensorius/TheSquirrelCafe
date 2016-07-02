@@ -135,7 +135,8 @@ def send_tweet(x):
   if x == 0:
     if lid_was_open_before == False:
       lid_was_open_before = True
-      peanut_count = peanut_count + 1
+      if time.time() - is_eating_timestamp > 5: # 5 secs minimum for eating a nut
+      	peanut_count = peanut_count + 1
       print 'peanut count: %d' % peanut_count
       is_eating_timestamp = time.time()
       if peanut_count == 3 and video_saved == False:
