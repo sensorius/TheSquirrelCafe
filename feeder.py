@@ -6,6 +6,8 @@ import time
 import RPi.GPIO as GPIO
 import tweepy
 import subprocess
+import urllib2 
+
 from twitter_token import *  # File containing twitter app keys and tokens
 
 BtnPin = 11
@@ -19,9 +21,11 @@ is_eating = False                 # Squirrel eating status
 is_eating_timestamp = time.time() # Set time of grabbing a bite
 starts_eating_timestamp = time.time() # First nut grabbed
 peanut_count = 0                  # Counter for lid openings
-timeout_eating = 60               # Lid openings within x seconds belong to a chowing session
+timeout_eating = 90               # Lid openings within x seconds belong to a chowing session
 api = None
 image_file = None                 # File with feeder image captured
+video_file = None                 # File with feeder video captured
+video_saved = False
 
 def setup():
   global api
@@ -77,14 +81,29 @@ def send_a_tweet_with_image(tweet_text):
     api.update_with_media(image_file, status=tweet_text)
 
   print tweet_text    
+
+def update_thingspeak( payload ):
+
+  baseurl = "https://api.thingspeak.com/update?api_key=%s" % thingspeak_api_key
+  f = urllib2.urlopen(baseurl + payload)
+  print f.read()
+  f.close()
+  
     
 def save_a_image():
   global image_file
 
-  image_file = "feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
+  image_file = "img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
   cmd = "raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
   subprocess.Popen(cmd, shell=True)
 
+
+def save_a_video():
+  global video_file
+
+  video_file = "vid_feeder.%s.mp4" % time.strftime("%Y-%m-%d-%H-%M-%S")
+  cmd = "raspivid -o %s -w 640 -h 360  -hf -vf " % video_file
+  subprocess.Popen(cmd, shell=True)
 
 
 def send_tweet_eating_finished():
@@ -103,11 +122,14 @@ def send_tweet_eating_finished():
    	npm = (peanut_count-1) / diff_time * 60
    	tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
         send_a_tweet_with_image( tweet_text )
+        update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count, read_temp(), npm))
+
    peanut_count = 0
 
 
 def send_tweet(x):
   global lid_was_open_before, peanut_count, is_eating, is_eating_timestamp, starts_eating_timestamp
+  global video_saved
 
   # Lid is open
   if x == 0:
@@ -116,7 +138,11 @@ def send_tweet(x):
       peanut_count = peanut_count + 1
       print 'peanut count: %d' % peanut_count
       is_eating_timestamp = time.time()
+      if peanut_count == 3 and video_saved == False:
+        save_a_video()
+        video_saved = True
       if is_eating == False:
+        video_saved = False
         temp = read_temp()
         starts_eating_timestamp = is_eating_timestamp
         
@@ -139,9 +165,12 @@ def detect(chn):
 def loop():
   global is_eating_timestamp, is_eating
 
+  thingspeak_temp_posted = False
+
   print 'Waiting for event...'
 
   while True:
+    time.sleep(0.01) # Avoid CPU overloading
     if is_eating:
       # Check if lid had been closed for at least e.g. 60 secs
       if (time.time()-is_eating_timestamp) > timeout_eating:
@@ -151,12 +180,22 @@ def loop():
     if time.localtime().tm_sec%2 == 0:
       GPIO.output(Rpin, 0)
       GPIO.output(Gpin, 1)
-      print '\rX0',
+      # print '\rX0',
     else:
       GPIO.output(Rpin, 1)
       GPIO.output(Gpin, 0)
-      print '\r0X',
+      # print '\r0X',
+
+    if time.localtime().tm_min%5 == 0:
+      if thingspeak_temp_posted == False:
+	update_thingspeak( '&field2=%.1f' % read_temp() )
+        thingspeak_temp_posted = True
+    else:
+      thingspeak_temp_posted = False
+
     pass
+
+
 
 
 def destroy():
