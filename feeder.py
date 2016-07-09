@@ -101,8 +101,8 @@ def save_a_image():
 def save_a_video():
   global video_file
 
-  video_file = "vid_feeder.%s.mp4" % time.strftime("%Y-%m-%d-%H-%M-%S")
-  cmd = "raspivid -o %s -w 640 -h 360  -hf -vf " % video_file
+  video_file = "vid_feeder.%s.h264" % time.strftime("%Y-%m-%d-%H-%M-%S")
+  cmd = "raspivid -o %s -w 1280 -h 720 -t 30000 -hf -vf " % video_file
   subprocess.Popen(cmd, shell=True)
 
 
@@ -120,7 +120,7 @@ def send_tweet_eating_finished():
    diff_time = is_eating_timestamp - starts_eating_timestamp	
    if diff_time > 0 and peanut_count > 1:
    	npm = (peanut_count-1) / diff_time * 60
-   	tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s" % (peanut_count, nut_text, npm, trigger_time)
+   	tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count, nut_text, npm, trigger_time)
         send_a_tweet_with_image( tweet_text )
         update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count, read_temp(), npm))
 
@@ -140,7 +140,7 @@ def send_tweet(x):
       print 'peanut count: %d' % peanut_count
       is_eating_timestamp = time.time()
       if peanut_count == 3 and video_saved == False:
-        save_a_video()
+        #save_a_video()
         video_saved = True
       if is_eating == False:
         video_saved = False
@@ -150,7 +150,7 @@ def send_tweet(x):
         trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
         tweet_text = "#Squirrel grabbing a nut from #IoT Feeder right now. %s, t=%0.1f[C]" % (trigger_time, temp) 
         save_a_image()
-        send_a_tweet( tweet_text )
+        #send_a_tweet( tweet_text )
         is_eating = True
 
   # Lid is closed
