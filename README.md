@@ -7,7 +7,7 @@ A project to validate the following assumption:
 
 
 The IoT Squirrel Feeder's homepage:
-http://bit.ly/iotsquirrel
+http://www.TheSquirrelCafe.com
 
 Tweepy - The python twitter lib used:
 http://www.tweepy.org
