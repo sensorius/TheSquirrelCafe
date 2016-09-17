@@ -16,18 +16,18 @@ char pass[] = "";  // your network password
 
 // SquirrelCafe Weather Data
 char writeApiKey[] = "";   // your ThingSpeak write API key
-int thingSpeakChannel = 0; // ThngSpeak Channel number
+int thingSpeakChannel = 0; // ThingSpeak Channel number
 
 
 int status = WL_IDLE_STATUS;
 WiFiClient  client;
 IPAddress ipBroadcast(192, 168, 178, 255);  // your local subnet Broadcast IP address
 
-// A UDP instance to let us send and receive packets over UDP
+// A UDP instance to let us send packets over UDP
 WiFiUDP Udp;
 
-const int LDR = A0;
-const int LED = D4;
+const int LDR = A0;  // Witty Cloud Light Sensor
+const int LED = D4;  // OnBoard LED used to show status
 
 // WittyCloud  data pin of sensor
 //#define DHTPIN D5
@@ -35,13 +35,13 @@ const int LED = D4;
 // NodeMCU  data pin of sensor
 #define DHTPIN D6
 
-// Sensortyp
+// Sensortype
 #define DHTTYPE DHT21 
 
 int dataCount = 0;
 
 
-// Initialising
+// Initialise DHT
 DHT dht(DHTPIN, DHTTYPE);
 
 
@@ -58,7 +58,7 @@ void ISRwatchdog() {
   
 }
 
-// Setup fintction
+// Setup function
 void setup() 
 {
   pinMode(LDR, INPUT);
@@ -97,8 +97,9 @@ void setup()
 
   dht.begin();
   
-  //Wait 30 seconds
- delay(30*1000);
+  // Wait 30 seconds in case you want to power off
+  // and wanted to see wifi connection status only
+  delay(30*1000);
 }
 
 
@@ -164,7 +165,7 @@ void loop()
 
    String count = "C:" +String(dataCount);
    String temp = "T:" +String(t);
-   String feuchte = " F:" + String(h);
+   String hum = " F:" + String(h);
    String result_code = "R:" + String(resultCode);
 
    char CountData[count.length() + 1];
@@ -173,8 +174,8 @@ void loop()
    char TempData[temp.length() + 1];
    temp.toCharArray(TempData, temp.length() + 1);
  
-   char FeuchteData[feuchte.length() + 1];
-   feuchte.toCharArray(FeuchteData, feuchte.length() + 1);
+   char HumData[hum.length() + 1];
+   hum.toCharArray(FeuchteData, hum.length() + 1);
 
    char ResultData[result_code.length() + 1];
    result_code.toCharArray(ResultData, result_code.length() + 1);
@@ -188,7 +189,7 @@ void loop()
    Udp.write("WeatherData ");
    Udp.write(CountData);
    Udp.write(TempData);
-   Udp.write(FeuchteData);
+   Udp.write(HumData);
    Udp.write(ResultData);
    Udp.println(" 4242");
    Udp.endPacket(); 
