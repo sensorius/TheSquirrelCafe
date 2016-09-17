@@ -1,4 +1,4 @@
-#**peanut - The IoT Squirrel Feeder**
+#**peanut - The Squirrel Cafe**
 
 
 A project to validate the following assumption:
