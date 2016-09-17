@@ -15,7 +15,7 @@ The directory ESP8266 contains a Arduino IDE Sketch which is used to log environ
 
 [Update 2016/08/05]
 
-The directory MatLab-Code contains the MinMaxVisu MatLab file which is used to calculate min and max temperature values of the last 24 hours. 
+The directory MatLab-Code contains the MinMaxVisu MatLab file which is used to generate a textual output of min and max temperature values on TheSquirrelCafe homepage. 
 
 
 Tweepy - The python twitter lib used:
