@@ -13,6 +13,9 @@ http://www.TheSquirrelCafe.com
 
 The directory ESP8266 contains a Arduino IDE Sketch which is used to log environmental weather data. Currently a DHT22 sensor is attached to a NodeMCU v3 board. Sensor readings are published on ThingSpeak. A Watchdog is implemented in case of misbehaviour. A rudimentary UDP packet broadcast with sensor readings has been implemented.
 
+[Update 2016/08/05]
+
+The directory MatLab-Code contains the MinMaxVisu MatLab file which is used to calculate min and max temperature values of the last 24 hours. 
 
 
 Tweepy - The python twitter lib used:
