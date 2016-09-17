@@ -9,11 +9,11 @@ The IoT Squirrel Feeder's homepage:
 http://www.TheSquirrelCafe.com
 
 
-[Update 2016/09/17]
+**[Update 2016/09/17]**
 
 The directory ESP8266 contains a Arduino IDE Sketch which is used to log environmental weather data. Currently a DHT22 sensor is attached to a NodeMCU v3 board. Sensor readings are published on ThingSpeak. A Watchdog is implemented in case of misbehaviour. A rudimentary UDP packet broadcast with sensor readings has been implemented.
 
-[Update 2016/08/05]
+**[Update 2016/08/05]**
 
 The directory MatLab-Code contains the MinMaxVisu MatLab file which is used to generate a textual output of min and max temperature values on TheSquirrelCafe homepage. 
 
