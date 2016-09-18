@@ -1,22 +1,22 @@
+
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 #include <ThingSpeak.h>
 #include <Ticker.h>
 #include <WiFiUDP.h>
 
-Ticker secondTickr;
+
+// Wifi Configuration
+char ssid[] = "";             // your network SSID (name) 
+char pass[] = "";             // your network password
+
+// ThingSpeak Configuration
+char writeApiKey[] = "";     // your ThingSpeak writeApiKey
+int thingSpeakChannel = 0;   // your ThingSpeak channel
+
+// Watchdog  ticker
+Ticker secondTicker;
 volatile int watchdogCount = 0;
-
-// Hier den ThingSpeak Write API key und die WLAn Netzwerk SSID und das Passwort eintragen
-
-char ssid[] = "";  // your network SSID (name) 
-char pass[] = "";  // your network password
-
-
-
-// SquirrelCafe Weather Data
-char writeApiKey[] = "";   // your ThingSpeak write API key
-int thingSpeakChannel = 0; // ThingSpeak Channel number
 
 
 int status = WL_IDLE_STATUS;
@@ -68,9 +68,10 @@ void setup()
   Serial.begin(115200);
   delay(10);
 
+  // watchDog Ticker
+  secondTicker.attach(1, ISRwatchdog);
 
-  secondTickr.attach(1, ISRwatchdog);
-
+  WiFi.mode(WIFI_STA);     // Switch off AP modus
   WiFi.begin(ssid, pass);
 
   ThingSpeak.begin(client);
@@ -162,7 +163,6 @@ void loop()
   }
 
 
-
    String count = "C:" +String(dataCount);
    String temp = "T:" +String(t);
    String hum = " F:" + String(h);
@@ -175,7 +175,7 @@ void loop()
    temp.toCharArray(TempData, temp.length() + 1);
  
    char HumData[hum.length() + 1];
-   hum.toCharArray(FeuchteData, hum.length() + 1);
+   hum.toCharArray(HumData, hum.length() + 1);
 
    char ResultData[result_code.length() + 1];
    result_code.toCharArray(ResultData, result_code.length() + 1);
