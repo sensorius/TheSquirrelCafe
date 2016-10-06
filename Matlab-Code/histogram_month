@@ -1,0 +1,24 @@
+% Read temperature for a specific month from a ThingSpeak channel and
+% visualize temperature variations using the MATLAB HISTOGRAM function.
+
+
+% Channel ID to read data from
+readChannelID = 145242;
+% Temperature Field ID
+TemperatureFieldID = 1;
+
+
+% Define date range
+startTime = datetime('11/01/2016','InputFormat','MM/dd/yyyy');
+endTime = datetime('11/30/2016','InputFormat','MM/dd/yyyy');
+
+
+tempC = thingSpeakRead(readChannelID,'DateRange', [startTime,endTime],  'Fields', TemperatureFieldID );
+
+h = histogram(tempC);
+h.BinEdges = [-10:30];
+
+xlabel('Temperature (C)');
+ylabel('Number of Measurements for each Temperature');
+title('Histogram of Temperature November 2016');
+grid on
