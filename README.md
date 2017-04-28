@@ -24,14 +24,7 @@ List 'feeder' processes running on the system:
 <code>ps aux | grep feeder</code>
 
 Kill process by PID:
-<code>kill PID</code> or <code>kill KILL PID</code>
-
-
-**USB Webcam**
-
-You can use a standard USB Webcam to take pictures an a Raspberry Pi using fswebcam. Install the fswebcam package:
-<code>sudo apt-get install fswebcam</code>
-To take a picture: <code>fswebcam image.jpg</code> 
+<code>kill PID</code> or <code>kill KILL PID</code> 
 
 
 **Useful Weblinks**
@@ -45,6 +38,7 @@ https://www.raspberrypi.org/blog/camera-board-available-for-sale/
 Launch Python script on startup:
 http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
 
-
+Using a standard USB Webcam:
+https://www.raspberrypi.org/documentation/usage/webcams/
 
 
