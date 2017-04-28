@@ -9,14 +9,25 @@ The IoT Squirrel Feeder's homepage:
 http://www.TheSquirrelCafe.com
 
 
-**[Update 2016/09/17]**
+**Useful shell commands**
 
-The directory ESP8266 contains a Arduino IDE Sketch which is used to log environmental weather data. Currently a DHT22 sensor is attached to a NodeMCU v3 board. Sensor readings are published on ThingSpeak. A Watchdog is implemented in case of misbehaviour. A rudimentary UDP packet broadcast with sensor readings has been implemented.
+A 'live' view of a logfile:
+<code>tail -f /logs/feeder.log</code>
 
-**[Update 2016/08/05]**
+Start a vncserver:
+<code>vncserver :1</code>
 
-The directory MatLab-Code contains the MinMaxVisu MatLab file which is used to generate a textual output of min and max temperature values on TheSquirrelCafe homepage. 
+Start feeder.py in the background:
+<code>python feeder.py &</code>
 
+List 'feeder' processes running on the system:
+<code>ps aux | grep feeder</code>
+
+Kill process by PID:
+<code>kill PID</code> or <code>kill KILL PID</code>
+
+
+**Useful Weblinks**
 
 Tweepy - The python twitter lib used:
 http://www.tweepy.org
