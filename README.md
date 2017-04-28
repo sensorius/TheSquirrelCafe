@@ -42,6 +42,8 @@ http://www.tweepy.org
 Raspberry Pi Cam Info:
 https://www.raspberrypi.org/blog/camera-board-available-for-sale/
 
+Launch Python script on startup:
+http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
 
 
 
