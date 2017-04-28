@@ -10,7 +10,7 @@ http://www.TheSquirrelCafe.com
 
 
 **Feeder Wiring:** 
-![Wiring Sketch](https://github.com/sensorius/peanut/blob/master/docs/feeder-wiring-reed-tm1637.jpg "Wiring of Reed Switch an LED Display")
+![Wiring Sketch](/docs/feeder-wiring-reed-tm1637.jpg "Wiring of Reed Switch an LED Display")
 
 **Useful shell commands**
 
