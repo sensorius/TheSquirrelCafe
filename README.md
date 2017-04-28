@@ -27,26 +27,17 @@ Kill process by PID:
 <code>kill PID</code> or <code>kill KILL PID</code> 
 
 
+
 **Useful Weblinks**
 
-Tweepy - The python twitter lib used:
+* Tweepy - The python twitter lib used: http://www.tweepy.org
 
-http://www.tweepy.org
+* Raspberry Pi Cam Info: https://www.raspberrypi.org/blog/camera-board-available-for-sale/
 
-Raspberry Pi Cam Info:
+* Launch Python script on startup: http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
 
-https://www.raspberrypi.org/blog/camera-board-available-for-sale/
+* Using a standard USB Webcam: https://www.raspberrypi.org/documentation/usage/webcams/
 
-Launch Python script on startup:
-
-http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
-
-Using a standard USB Webcam:
-
-https://www.raspberrypi.org/documentation/usage/webcams/
-
-Driver library for TM1637 7 Segment LED Display:
-
-https://github.com/timwaizenegger/raspberrypi-examples/tree/master/actor-led-7segment-4numbers
+* Driver library for TM1637 7 Segment LED Display: https://github.com/timwaizenegger/raspberrypi-examples/tree/master/actor-led-7segment-4numbers
 
 
