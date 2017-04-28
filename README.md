@@ -41,7 +41,7 @@ http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
 Using a standard USB Webcam:
 https://www.raspberrypi.org/documentation/usage/webcams/
 
-Driver library for TM1637 8 Segment LED Display
+Driver library for TM1637 7 Segment LED Display
 https://github.com/timwaizenegger/raspberrypi-examples/tree/master/actor-led-7segment-4numbers
 
 
