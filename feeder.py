@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 import os
@@ -7,202 +7,174 @@ import RPi.GPIO as GPIO
 import tweepy
 import subprocess
 import urllib2 
+import sys
+import time
 
-from twitter_token import *  # File containing twitter app keys and tokens
+from twitter_token import *           # File containing twitter app keys and tokens
 
-BtnPin = 11
-Gpin   = 12
-Rpin   = 13
+BtnPin = 17                           # Lid open sensor
 
-ds18b20 = '28-04162025b3ff'       # Device ID
-tweet_enabled = True              # Send tweet on twitter
-lid_was_open_before = False       # Only send tweets when lid is closed again
-is_eating = False                 # Squirrel eating status
-is_eating_timestamp = time.time() # Set time of grabbing a bite
-starts_eating_timestamp = time.time() # First nut grabbed
-peanut_count = 0                  # Counter for lid openings
-timeout_eating = 90               # Lid openings within x seconds belong to a chowing session
-api = None
-image_file = None                 # File with feeder image captured
-video_file = None                 # File with feeder video captured
-video_saved = False
+tweeting_enabled = False              # Send tweet on twitter
+tweet_image = True
+squirrel_is_present = False           # Squirrel presence status
+lid_open_timestamp = time.time()      # Set time of grabbing a bite
+starts_eating_timestamp = time.time() # First nut grabbed, first opening of lid
+peanut_count = 0                      # Counter for lid openings
+peanut_count_old = 0
+timeout_presence = 90                 # Lid openings within x seconds belong to a chowing session
+Tweepy = None
+image_file = None                     # File with feeder image captured
+video_file = None                     # File with feeder video captured
+
+
+LOGFILE='logs/feeder.log'
+
+
+def writelog(message):
+    with open(LOGFILE,'a') as f:
+        f.write("{0} {1}\n".format(time.asctime( time.localtime(time.time())),
+                                   message))
+
 
 def setup():
-  global api
-  GPIO.setmode(GPIO.BOARD) # Numbers GPIOs by physical location
-  GPIO.setup(Gpin, GPIO.OUT) # Set Green Led Pin mode to output
-  GPIO.setup(Rpin, GPIO.OUT) # Set Red Led Pin mode to output
+  global Tweepy
+
+  GPIO.setmode(GPIO.BCM) # Numbers GPIOs 
   GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP) # Set BtnPin's mode is input, and pull up to high level(3.3V)
-  GPIO.add_event_detect(BtnPin, GPIO.BOTH, callback=detect, bouncetime=200)
+  GPIO.add_event_detect(BtnPin, GPIO.RISING, callback=lid_open, bouncetime=200)
+
+  Display.Clear()
+  Display.SetBrightnes(1)
+
+  writelog('Access Token')
+  writelog(access_token)
   auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
   auth.secure = True
   auth.set_access_token(access_token, access_token_secret)
 
-  api = tweepy.API(auth)
+  Tweepy = tweepy.API(auth)
 
   # If the authentication was successful, you should
   # see the name of the account print out
-  print(api.me().name)	
-  print 'Setup finished'
+  # Doesn't work at startup using crontab...?
+  #writelog(Tweepy.me().name)	
+  writelog('Setup finished')
 
-
-def read_temp():
-  location = '/sys/bus/w1/devices/' + ds18b20 + '/w1_slave'
-  tfile = open(location)
-  text = tfile.read()
-  tfile.close()
-  secondline = text.split("\n")[1]
-  temperaturedata = secondline.split(" ")[9]
-  temperature = float(temperaturedata[2:])
-  temperature = temperature / 1000
-  return temperature
-
-def set_led(x):
-  if x == 0:
-    GPIO.output(Rpin, 1)
-    GPIO.output(Gpin, 0)
-  if x == 1:
-    GPIO.output(Rpin, 0)
-    GPIO.output(Gpin, 1)
-
-
-def send_a_tweet(tweet_text):
-  global api
-  if tweet_enabled:
-    tweet_text = tweet_text + ' - RaspberryPi powered.'
-    api.update_status(status=tweet_text)
-    #subprocess.call(tweet, shell=True)
-  print tweet_text
 
 def send_a_tweet_with_image(tweet_text):
-  global api, image_file
-  if tweet_enabled:
-    tweet_text = tweet_text + ' - RaspberryPi powered.'
-    api.update_with_media(image_file, status=tweet_text)
+  global  image_file
 
-  print tweet_text    
+  tweet_text = tweet_text + ' - #TEST'
+  if tweeting_enabled:
+    Tweepy.update_with_media(image_file, status=tweet_text)
+  writelog(tweet_text)    
+
+
+def send_a_tweet_with_video(tweet_text):
+  global video_file
+
+  tweet_text = tweet_text + ' - RaspberryPi powered.'
+  if tweeting_enabled:
+    media = Tweepy.upload_chunked(video_file)
+    Tweepy.update_status(status=tweet_text, media_ids=[media.media_id])
+  writelog(tweet_text)
+
 
 def update_thingspeak( payload ):
-
   baseurl = "https://api.thingspeak.com/update?api_key=%s" % thingspeak_api_key
   f = urllib2.urlopen(baseurl + payload)
-  print f.read()
+  writelog(f.read())
   f.close()
   
     
 def save_a_image():
   global image_file
 
-  image_file = "img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
-  cmd = "raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
+  writelog('Capture and save image')
+  image_file = "images/img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
+  cmd = "sudo raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
   subprocess.Popen(cmd, shell=True)
 
 
 def save_a_video():
   global video_file
 
-  video_file = "vid_feeder.%s.h264" % time.strftime("%Y-%m-%d-%H-%M-%S")
-  cmd = "raspivid -o %s -w 1280 -h 720 -t 30000 -hf -vf " % video_file
+  writelog('Capture and save video')
+  video_file = "videos/vid_feeder.%s.h264" % time.strftime("%Y-%m-%d-%H-%M-%S")
+  cmd = "raspivid -o %s -w 640 -h 360 -t 20000 -hf -vf " % video_file
   subprocess.Popen(cmd, shell=True)
 
 
-def send_tweet_eating_finished():
-   global peanut_count
+def squirrel_seems_to_have_had_enough():
+  global peanut_count, peanut_count_old
 
-   trigger_time = time.strftime("%H:%M:%S UTC+2")
+  trigger_time = time.strftime("%H:%M:%S UTC+2")
+  writelog('Squirrel seems to have had enough') 
+  # More than one nut?
+  if peanut_count == 2:
+    nut_text = "nut"
+  else:
+    nut_text = "nuts"
+  
+  # Time difference of last and first lid opening 
+  diff_time = lid_open_timestamp - starts_eating_timestamp	
+  if diff_time > 0 and peanut_count > 1:
+    npm = (peanut_count-1) * 0.5 / diff_time * 60
+    tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count*0.5, nut_text, npm, trigger_time)
+    send_a_tweet_with_image( tweet_text )
+    update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count*0.5, 0, npm))
+
+  peanut_count_old = peanut_count
+  peanut_count = 0
    
-   # More than one nut?
-   if peanut_count == 1:
-   	nut__text = "nut"
-   else:
-   	nut_text = "nuts"
-   
-   diff_time = is_eating_timestamp - starts_eating_timestamp	
-   if diff_time > 0 and peanut_count > 1:
-   	npm = (peanut_count-1) / diff_time * 60
-   	tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count, nut_text, npm, trigger_time)
-        send_a_tweet_with_image( tweet_text )
-        update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count, read_temp(), npm))
-
-   peanut_count = 0
 
 
-def send_tweet(x):
-  global lid_was_open_before, peanut_count, is_eating, is_eating_timestamp, starts_eating_timestamp
-  global video_saved
+def lid_open(chn):
+  global lid_open_timestamp, starts_eating_timestamp, squirrel_is_present, peanut_count 
+  
+  writelog('Lid has been opened')
+  squirrel_is_present = True
+  # To eat a nut, you need at least 5 seconds
+  if time.time() - lid_open_timestamp > 5:
+    writelog('Increment nut count')
+    peanut_count += 1
+    writelog(peanut_count)
 
-  # Lid is open
-  if x == 0:
-    if lid_was_open_before == False:
-      lid_was_open_before = True
-      if time.time() - is_eating_timestamp > 5: # 5 secs minimum for eating a nut
-      	peanut_count = peanut_count + 1
-      print 'peanut count: %d' % peanut_count
-      is_eating_timestamp = time.time()
-      if peanut_count == 3 and video_saved == False:
-        #save_a_video()
-        video_saved = True
-      if is_eating == False:
-        video_saved = False
-        temp = read_temp()
-        starts_eating_timestamp = is_eating_timestamp
-        
-        trigger_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        tweet_text = "#Squirrel grabbing a nut from #IoT Feeder right now. %s, t=%0.1f[C]" % (trigger_time, temp) 
-        save_a_image()
-        #send_a_tweet( tweet_text )
-        is_eating = True
-
-  # Lid is closed
-  if x == 1:
-    lid_was_open_before = False
-
-
-def detect(chn): 
-  set_led(GPIO.input(BtnPin))
-  send_tweet(GPIO.input(BtnPin))
+  lid_open_timestamp = time.time()   
+  if peanut_count == 1:
+    starts_eating_timestamp = time.time()
+    save_a_image()
+    #save_a_video()
 
 
 def loop():
-  global is_eating_timestamp, is_eating
+  global lid_open_timestamp, squirrel_is_present, peanut_count, peanut_count_old
 
-  thingspeak_temp_posted = False
-
-  print 'Waiting for event...'
-
+  writelog('Waiting for event...')
+  flag_writelog = True
   while True:
-    time.sleep(0.01) # Avoid CPU overloading
-    if is_eating:
-      # Check if lid had been closed for at least e.g. 60 secs
-      if (time.time()-is_eating_timestamp) > timeout_eating:
-        is_eating = False
-        send_tweet_eating_finished()
-    # Blinking LED to indicate that script is running
-    if time.localtime().tm_sec%2 == 0:
-      GPIO.output(Rpin, 0)
-      GPIO.output(Gpin, 1)
-      # print '\rX0',
+    time.sleep(0.2) # Avoid CPU overloading
+
+    if squirrel_is_present:
+      # Check if lid hasn't been opened for at least e.g. 90 secs
+      # If so, assume squirrel has left the spot
+      if (time.time()-lid_open_timestamp) > timeout_presence:
+        squirrel_is_present = False
+	squirrel_seems_to_have_had_enough()
     else:
-      GPIO.output(Rpin, 1)
-      GPIO.output(Gpin, 0)
-      # print '\r0X',
-
-    if time.localtime().tm_min%5 == 0:
-      if thingspeak_temp_posted == False:
-	update_thingspeak( '&field2=%.1f' % read_temp() )
-        thingspeak_temp_posted = True
-    else:
-      thingspeak_temp_posted = False
-
-    pass
-
-
+      # Write a alive message to logfile every 10 minutes
+      if not int(time.time())%600: 
+        if flag_writelog:
+          writelog('Waiting for a squirrel to appear.')
+        flag_writelog = False
+      else:
+        flag_writelog = True
 
 
 def destroy():
-  GPIO.output(Gpin, GPIO.HIGH) # Green LED off
-  GPIO.output(Rpin, GPIO.HIGH) # Red LED off
+  writelog('Destroy')
   GPIO.cleanup() # Release resource
+  
 
 
 if __name__ == '__main__': # Program start from here
@@ -211,3 +183,4 @@ if __name__ == '__main__': # Program start from here
     loop()
   except KeyboardInterrupt: # When 'Ctrl+C' is pressed, the child program destroy() will be executed.
     destroy()
+
