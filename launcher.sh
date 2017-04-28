@@ -3,5 +3,5 @@
 
 cd /
 cd home/pi/peanut
-sudo python feeder2.py &
+sudo python feeder.py &
 cd /
