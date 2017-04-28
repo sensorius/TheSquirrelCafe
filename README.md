@@ -1,4 +1,4 @@
-#**peanut - The Squirrel Cafe**
+#**peanut - The Squirrel Cafe - An Internet Connected Feeder**
 
 
 A project to validate the following assumption:
