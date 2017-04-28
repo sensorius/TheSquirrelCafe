@@ -27,6 +27,13 @@ Kill process by PID:
 <code>kill PID</code> or <code>kill KILL PID</code>
 
 
+**USB Webcam**
+
+You can use a standard USB Webcam to take pictures an a Raspberry Pi using fswebcam. Install the fswebcam package:
+<code>sudo apt-get install fswebcam</code>
+To take a picture: <code>fswebcam image.jpg</code> 
+
+
 **Useful Weblinks**
 
 Tweepy - The python twitter lib used:
