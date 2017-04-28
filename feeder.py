@@ -9,6 +9,7 @@ import subprocess
 import urllib2 
 import sys
 import time
+import tm1637
 
 from twitter_token import *           # File containing twitter app keys and tokens
 
@@ -26,6 +27,8 @@ Tweepy = None
 image_file = None                     # File with feeder image captured
 video_file = None                     # File with feeder video captured
 
+
+Display = tm1637.TM1637(23,24,tm1637.BRIGHT_TYPICAL)
 
 LOGFILE='logs/feeder.log'
 
@@ -58,12 +61,10 @@ def setup():
   # see the name of the account print out
   # Doesn't work at startup using crontab...?
   #writelog(Tweepy.me().name)	
-  writelog('Setup finished')
+  writelog('Setup finished.')
 
 
 def send_a_tweet_with_image(tweet_text):
-  global  image_file
-
   tweet_text = tweet_text + ' - #TEST'
   if tweeting_enabled:
     Tweepy.update_with_media(image_file, status=tweet_text)
@@ -71,8 +72,6 @@ def send_a_tweet_with_image(tweet_text):
 
 
 def send_a_tweet_with_video(tweet_text):
-  global video_file
-
   tweet_text = tweet_text + ' - RaspberryPi powered.'
   if tweeting_enabled:
     media = Tweepy.upload_chunked(video_file)
@@ -88,8 +87,6 @@ def update_thingspeak( payload ):
   
     
 def save_a_image():
-  global image_file
-
   writelog('Capture and save image')
   image_file = "images/img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
   cmd = "sudo raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
@@ -97,8 +94,6 @@ def save_a_image():
 
 
 def save_a_video():
-  global video_file
-
   writelog('Capture and save video')
   video_file = "videos/vid_feeder.%s.h264" % time.strftime("%Y-%m-%d-%H-%M-%S")
   cmd = "raspivid -o %s -w 640 -h 360 -t 20000 -hf -vf " % video_file
@@ -122,7 +117,7 @@ def squirrel_seems_to_have_had_enough():
     npm = (peanut_count-1) * 0.5 / diff_time * 60
     tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count*0.5, nut_text, npm, trigger_time)
     send_a_tweet_with_image( tweet_text )
-    update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count*0.5, 0, npm))
+    # update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count*0.5, 0, npm))
 
   peanut_count_old = peanut_count
   peanut_count = 0
@@ -138,9 +133,11 @@ def lid_open(chn):
   if time.time() - lid_open_timestamp > 5:
     writelog('Increment nut count')
     peanut_count += 1
+    Display.Show([0x7f,0x7f,peanut_count/10,peanut_count%10])
     writelog(peanut_count)
 
-  lid_open_timestamp = time.time()   
+  lid_open_timestamp = time.time() 
+  
   if peanut_count == 1:
     starts_eating_timestamp = time.time()
     save_a_image()
@@ -148,9 +145,9 @@ def lid_open(chn):
 
 
 def loop():
-  global lid_open_timestamp, squirrel_is_present, peanut_count, peanut_count_old
+  global squirrel_is_present
 
-  writelog('Waiting for event...')
+  writelog('Waiting...')
   flag_writelog = True
   while True:
     time.sleep(0.2) # Avoid CPU overloading
@@ -162,6 +159,15 @@ def loop():
         squirrel_is_present = False
 	squirrel_seems_to_have_had_enough()
     else:
+      try: 
+        if time.time()%2 > 1.0:
+          Display.Show([peanut_count_old/10,peanut_count_old%10,0x7f,0x7f])
+          Display.ShowDoublepoint(0)
+        else:
+          Display.Show([0x7f,0x7f,0x7f,0x7f])
+          Display.ShowDoublepoint(1)
+      except:
+        writelog('Ooops, display exception.')
       # Write a alive message to logfile every 10 minutes
       if not int(time.time())%600: 
         if flag_writelog:
@@ -173,6 +179,7 @@ def loop():
 
 def destroy():
   writelog('Destroy')
+  Display.clear()
   GPIO.cleanup() # Release resource
   
 
