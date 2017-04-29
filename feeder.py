@@ -15,7 +15,7 @@ from twitter_token import *           # File containing twitter app keys and tok
 
 BtnPin = 17                           # Lid open sensor
 
-tweeting_enabled = False              # Send tweet on twitter
+tweeting_enabled = True               # Send tweet on twitter
 tweet_image = True
 squirrel_is_present = False           # Squirrel presence status
 lid_open_timestamp = time.time()      # Set time of grabbing a bite
@@ -65,7 +65,7 @@ def setup():
 
 
 def send_a_tweet_with_image(tweet_text):
-  tweet_text = tweet_text + ' - #TEST'
+  tweet_text = tweet_text + ' -RaspberryPi powered'
   if tweeting_enabled:
     Tweepy.update_with_media(image_file, status=tweet_text)
   writelog(tweet_text)    
@@ -89,7 +89,8 @@ def update_thingspeak( payload ):
 def save_a_image():
   writelog('Capture and save image')
   image_file = "images/img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
-  cmd = "sudo raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
+  #cmd = "sudo raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
+  cmd = "sudo fswebcam -r 640x480 %s &" % image_file
   subprocess.Popen(cmd, shell=True)
 
 
@@ -179,7 +180,7 @@ def loop():
 
 def destroy():
   writelog('Destroy')
-  Display.clear()
+  Display.Clear()
   GPIO.cleanup() # Release resource
   
 
