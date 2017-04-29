@@ -47,7 +47,7 @@ def setup():
   GPIO.add_event_detect(BtnPin, GPIO.RISING, callback=lid_open, bouncetime=200)
 
   Display.Clear()
-  Display.SetBrightnes(1)
+  Display.SetBrightnes(5)
 
   writelog('Access Token')
   writelog(access_token)
