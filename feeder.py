@@ -49,8 +49,6 @@ def setup():
   Display.Clear()
   Display.SetBrightnes(5)
 
-  writelog('Access Token')
-  writelog(access_token)
   auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
   auth.secure = True
   auth.set_access_token(access_token, access_token_secret)
@@ -67,6 +65,8 @@ def setup():
 def send_a_tweet_with_image(tweet_text):
   tweet_text = tweet_text + ' -RaspberryPi powered'
   if tweeting_enabled:
+    writelog('send_a_tweet_with_image')
+    writelog(image_file)
     Tweepy.update_with_media(image_file, status=tweet_text)
   writelog(tweet_text)    
 
@@ -87,6 +87,8 @@ def update_thingspeak( payload ):
   
     
 def save_a_image():
+  global image_file
+
   writelog('Capture and save image')
   image_file = "images/img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
   #cmd = "sudo raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
@@ -95,6 +97,8 @@ def save_a_image():
 
 
 def save_a_video():
+  global video_file
+
   writelog('Capture and save video')
   video_file = "videos/vid_feeder.%s.h264" % time.strftime("%Y-%m-%d-%H-%M-%S")
   cmd = "raspivid -o %s -w 640 -h 360 -t 20000 -hf -vf " % video_file
@@ -114,11 +118,14 @@ def squirrel_seems_to_have_had_enough():
   
   # Time difference of last and first lid opening 
   diff_time = lid_open_timestamp - starts_eating_timestamp	
+  writelog('Before if diff_time')
   if diff_time > 0 and peanut_count > 1:
     npm = (peanut_count-1) * 0.5 / diff_time * 60
     tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count*0.5, nut_text, npm, trigger_time)
+    writelog('Within diff')
+    writelog(tweet_text)
     send_a_tweet_with_image( tweet_text )
-    # update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count*0.5, 0, npm))
+    update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count*0.5, 0, npm))
 
   peanut_count_old = peanut_count
   peanut_count = 0
