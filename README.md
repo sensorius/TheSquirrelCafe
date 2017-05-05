@@ -37,6 +37,8 @@ Kill process by PID:
 
 * Raspberry Pi Cam Info: https://www.raspberrypi.org/blog/camera-board-available-for-sale/
 
+* USB Webcam Guide: http://elinux.org/RPi_USB_Webcams
+
 * Launch Python script on startup: http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
 
 * Using a standard USB Webcam: https://www.raspberrypi.org/documentation/usage/webcams/
