@@ -10,6 +10,7 @@ import urllib2
 import sys
 import time
 import tm1637
+import random 
 
 from twitter_token import *           # File containing twitter app keys and tokens
 
@@ -22,7 +23,7 @@ lid_open_timestamp = time.time()      # Set time of grabbing a bite
 starts_eating_timestamp = time.time() # First nut grabbed, first opening of lid
 peanut_count = 0                      # Counter for lid openings
 peanut_count_old = 0
-timeout_presence = 90                 # Lid openings within x seconds belong to a chowing session
+timeout_presence = 180                # Lid openings within x seconds belong to a chowing session, adjust for food type!
 Tweepy = None
 image_file = None                     # File with feeder image captured
 video_file = None                     # File with feeder video captured
@@ -63,7 +64,7 @@ def setup():
 
 
 def send_a_tweet_with_image(tweet_text):
-  tweet_text = tweet_text + ' -RaspberryPi powered'
+  tweet_text = tweet_text + ' - RaspberryPi powered'
   if tweeting_enabled:
     writelog('send_a_tweet_with_image')
     writelog(image_file)
@@ -92,9 +93,12 @@ def save_a_image():
   writelog('Capture and save image')
   image_file = "images/img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
   #cmd = "sudo raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
-  cmd = "sudo fswebcam -r 640x480 %s &" % image_file
+  cmd = "sudo fswebcam -c fswebcam.cfg %s &" % image_file
+  wait_in_secs = random.randint(0,2)*0.25
+  time.sleep(wait_in_secs)
+  writelog(wait_in_secs)
   subprocess.Popen(cmd, shell=True)
-
+  time.sleep(2)
 
 def save_a_video():
   global video_file
@@ -121,7 +125,7 @@ def squirrel_seems_to_have_had_enough():
   writelog('Before if diff_time')
   if diff_time > 0 and peanut_count > 1:
     npm = (peanut_count-1) * 0.5 / diff_time * 60
-    tweet_text = "#Squirrel chowed %d %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count*0.5, nut_text, npm, trigger_time)
+    tweet_text = "#Squirrel chowed %.1f %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count*0.5, nut_text, npm, trigger_time)
     writelog('Within diff')
     writelog(tweet_text)
     send_a_tweet_with_image( tweet_text )
