@@ -26,6 +26,7 @@ peanut_count_old = 0
 timeout_presence = 180                # Lid openings within x seconds belong to a chowing session, adjust for food type!
 Tweepy = None
 image_file = None                     # File with feeder image captured
+image_file_saved_flag = False         # File saved flag
 video_file = None                     # File with feeder video captured
 
 
@@ -88,7 +89,7 @@ def update_thingspeak( payload ):
   
     
 def save_a_image():
-  global image_file
+  global image_file, image_file_saved_flag
 
   writelog('Capture and save image')
   image_file = "images/img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
@@ -98,6 +99,7 @@ def save_a_image():
   time.sleep(wait_in_secs)
   writelog(wait_in_secs)
   subprocess.Popen(cmd, shell=True)
+  image_file_saved_flag = True
   time.sleep(2)
 
 def save_a_video():
@@ -133,6 +135,7 @@ def squirrel_seems_to_have_had_enough():
 
   peanut_count_old = peanut_count
   peanut_count = 0
+  image_file_saved_flag = False
    
 
 
@@ -152,7 +155,8 @@ def lid_open(chn):
   
   if peanut_count == 1:
     starts_eating_timestamp = time.time()
-    save_a_image()
+    if image_file_saved_flag is False:
+      save_a_image()
     #save_a_video()
 
 
