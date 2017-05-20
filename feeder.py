@@ -112,7 +112,7 @@ def save_a_video():
 
 
 def squirrel_seems_to_have_had_enough():
-  global peanut_count, peanut_count_old
+  global peanut_count, peanut_count_old, image_file_saved_flag
 
   trigger_time = time.strftime("%H:%M:%S UTC+2")
   writelog('Squirrel seems to have had enough') 
