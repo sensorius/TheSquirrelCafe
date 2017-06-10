@@ -65,7 +65,7 @@ def setup():
 
 
 def send_a_tweet_with_image(tweet_text):
-  tweet_text = tweet_text + ' - RaspberryPi powered'
+  tweet_text = tweet_text + ' #IoT #Winter #Weather #Forecast'
   if tweeting_enabled:
     writelog('send_a_tweet_with_image')
     writelog(image_file)
@@ -126,10 +126,13 @@ def squirrel_seems_to_have_had_enough():
   diff_time = lid_open_timestamp - starts_eating_timestamp	
   writelog('Before if diff_time')
   if diff_time > 0 and peanut_count > 1:
-    npm = (peanut_count-1) * 0.5 / diff_time * 60
-    tweet_text = "#Squirrel chowed %.1f %s down at #IoT Feeder. v=%.2f[npm] %s #ThingSpeak" % (peanut_count*0.5, nut_text, npm, trigger_time)
+    npm = (peanut_count-0) * 0.5 / diff_time * 60.0
+    diff_text = ("%.2f min" % (diff_time / 60.0))
+    npm_text = "v=%.2f[npm]" % npm
+    tweet_text = "A #Squirrel chowed down on %.1f %s for %s at %s. #ThingSpeak" % (peanut_count*0.5, nut_text, diff_text, trigger_time)
     writelog('Within diff')
     writelog(tweet_text)
+    writelog(npm)
     send_a_tweet_with_image( tweet_text )
     update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count*0.5, 0, npm))
 
