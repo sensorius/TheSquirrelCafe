@@ -10,7 +10,8 @@ http://www.TheSquirrelCafe.com
 
 
 **Feeder Wiring:** 
-![Wiring Sketch](/docs/feeder-wiring-reed-tm1637.jpg "Wiring of Reed Switch an LED Display")
+
+<img src="/docs/feeder-wiring-reed-tm1637.jpg" width="480">
 
 **Prerequisites**
 
