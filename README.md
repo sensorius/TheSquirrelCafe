@@ -12,6 +12,12 @@ http://www.TheSquirrelCafe.com
 **Feeder Wiring:** 
 ![Wiring Sketch](/docs/feeder-wiring-reed-tm1637.jpg "Wiring of Reed Switch an LED Display")
 
+**Prerequisites**
+
+Currently, I'm using a Logitech C270 USB webcam to capture photos of the squirrels at the nut feeder. Therefore you need to install a USB Webcam package. I've opted for the 'fswebcam' package.
+
+<code>sudo apt-get install fswebcam</code>
+
 **Useful shell commands**
 
 A 'live' view of a logfile:
