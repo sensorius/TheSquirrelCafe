@@ -49,7 +49,7 @@ Kill process by PID:
 * Launch Python script on startup: http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
 
 <code>
-*/5 * * * * pgrep -f feeder.py | pgrep python | pgrp sudo || sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
+@reboot sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
 </code>
 
 * Using a standard USB Webcam: https://www.raspberrypi.org/documentation/usage/webcams/
