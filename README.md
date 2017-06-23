@@ -48,6 +48,10 @@ Kill process by PID:
 
 * Launch Python script on startup: http://www.instructables.com/id/Raspberry-Pi-Launch-Python-script-on-startup/
 
+<code>
+*/5 * * * * pgrep -f feeder.py | pgrep python | pgrp sudo || sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
+</code>
+
 * Using a standard USB Webcam: https://www.raspberrypi.org/documentation/usage/webcams/
 
 * Driver library for TM1637 7 Segment LED Display: https://github.com/timwaizenegger/raspberrypi-examples/tree/master/actor-led-7segment-4numbers
@@ -55,8 +59,6 @@ Kill process by PID:
 * Restart launcher.sh script if exception kicks in using crontab: https://unix.stackexchange.com/questions/107939/how-to-restart-the-python-script-automatically-if-it-is-killed-or-dies
 
 <code>
-@reboot sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
-
 */5 * * * * pgrep -f feeder.py | pgrep python | pgrp sudo || sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
 </code>
 
