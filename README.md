@@ -56,6 +56,7 @@ Kill process by PID:
 
 <code>
 @reboot sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
+
 */5 * * * * pgrep -f feeder.py | pgrep python | pgrp sudo || sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
 </code>
 
