@@ -46,7 +46,8 @@ def setup():
 
   GPIO.setmode(GPIO.BCM) # Numbers GPIOs 
   GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP) # Set BtnPin's mode is input, and pull up to high level(3.3V)
-  GPIO.add_event_detect(BtnPin, GPIO.RISING, callback=lid_open, bouncetime=200)
+  # GPIO.add_event_detect(BtnPin, GPIO.RISING, callback=lid_open, bouncetime=200)
+  GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=lid_open, bouncetime=200)
 
   Display.Clear()
   Display.SetBrightnes(5)
@@ -65,11 +66,14 @@ def setup():
 
 
 def send_a_tweet_with_image(tweet_text):
-  tweet_text = tweet_text + ' #IoT #Winter #Weather #Forecast'
+  tweet_text = tweet_text + ' An #IoT project to predict how cold it\'ll be next winter. #ThingSpeak'
   if tweeting_enabled:
     writelog('send_a_tweet_with_image')
     writelog(image_file)
-    Tweepy.update_with_media(image_file, status=tweet_text)
+    try:
+      Tweepy.update_with_media(image_file, status=tweet_text)
+    except:
+      writelog('Exception on sending a tweet')
   writelog(tweet_text)    
 
 
@@ -129,7 +133,7 @@ def squirrel_seems_to_have_had_enough():
     npm = (peanut_count-0) * 0.5 / diff_time * 60.0
     diff_text = ("%.2f min" % (diff_time / 60.0))
     npm_text = "v=%.2f[npm]" % npm
-    tweet_text = "A #Squirrel chowed down on %.1f %s for %s at %s. #ThingSpeak" % (peanut_count*0.5, nut_text, diff_text, trigger_time)
+    tweet_text = "#Squirrel chowed down on %.1f %s for %s at %s." % (peanut_count*0.5, nut_text, diff_text, trigger_time)
     writelog('Within diff')
     writelog(tweet_text)
     writelog(npm)
