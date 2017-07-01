@@ -52,6 +52,8 @@ Kill process by PID:
 @reboot sudo sh /home/pi/peanut/launcher.sh >/home/pi/peanut/logs/cronlog.log 2>&1
 </code>
 
+You don't need this crontab entry, if you have implemented the restart launcher.sh script on exceptions as described below.
+
 * Using a standard USB Webcam: https://www.raspberrypi.org/documentation/usage/webcams/
 
 * Driver library for TM1637 7 Segment LED Display: https://github.com/timwaizenegger/raspberrypi-examples/tree/master/actor-led-7segment-4numbers
