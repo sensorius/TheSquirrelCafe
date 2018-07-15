@@ -25,7 +25,7 @@ peanut_count = 0                      # Counter for lid openings
 peanut_count_old = 0
 timeout_presence = 180                # Lid openings within x seconds belong to a chowing session, adjust for food type!
 Tweepy = None
-image_file = None                     # File with feeder image captured
+image_file = 'None'                   # File with feeder image captured
 image_file_saved_flag = False         # File saved flag
 video_file = None                     # File with feeder video captured
 
@@ -33,13 +33,21 @@ video_file = None                     # File with feeder video captured
 Display = tm1637.TM1637(23,24,tm1637.BRIGHT_TYPICAL)
 
 LOGFILE='logs/feeder.log'
-
+DATAFILE='logs/data.csv'
 
 def writelog(message):
-    with open(LOGFILE,'a') as f:
-        f.write("{0} {1}\n".format(time.asctime( time.localtime(time.time())),
+  with open(LOGFILE,'a') as f:
+    f.write("{0} {1}\n".format(time.asctime( time.localtime(time.time())),
                                    message))
 
+def writedata(time, nuts, duration):
+  with open(DATAFILE,'a') as f:
+    f.write("{0},{1},{2}\n".format(date, time, nuts, duration))
+
+def destroy():
+  writelog('Destroy')
+  Display.Clear()
+  GPIO.cleanup() # Release resource
 
 def setup():
   global Tweepy
@@ -47,7 +55,7 @@ def setup():
   GPIO.setmode(GPIO.BCM) # Numbers GPIOs 
   GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP) # Set BtnPin's mode is input, and pull up to high level(3.3V)
   # GPIO.add_event_detect(BtnPin, GPIO.RISING, callback=lid_open, bouncetime=200)
-  GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=lid_open, bouncetime=200)
+  GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=lid_open, bouncetime=400)
 
   Display.Clear()
   Display.SetBrightnes(5)
@@ -63,6 +71,11 @@ def setup():
   # Doesn't work at startup using crontab...?
   #writelog(Tweepy.me().name)	
   writelog('Setup finished.')
+ 
+  if os.path.isfile('images/img_feeder.2017-08-10-16-21-34.jpg') is False:
+    writelog('...not present')
+  else:
+    writelog('...is present')
 
 
 def send_a_tweet_with_image(tweet_text):
@@ -70,11 +83,17 @@ def send_a_tweet_with_image(tweet_text):
   if tweeting_enabled:
     writelog('send_a_tweet_with_image')
     writelog(image_file)
+    writelog(tweet_text)
     try:
+      writelog('Before update with media')
+      # check if file exists
       Tweepy.update_with_media(image_file, status=tweet_text)
-    except:
+      writelog('After update with media')
+    except Tweepy.TweepError as err:
       writelog('Exception on sending a tweet')
-  writelog(tweet_text)    
+      writelog(err)
+      destroy()
+  writelog('Tweet sent')    
 
 
 def send_a_tweet_with_video(tweet_text):
@@ -93,18 +112,21 @@ def update_thingspeak( payload ):
   
     
 def save_a_image():
-  global image_file, image_file_saved_flag
+  global image_file
 
   writelog('Capture and save image')
   image_file = "images/img_feeder.%s.jpg" % time.strftime("%Y-%m-%d-%H-%M-%S")
   #cmd = "sudo raspistill -o %s -t 200 -w 640 -h 480 --hflip --vflip" % image_file
-  cmd = "sudo fswebcam -c fswebcam.cfg %s &" % image_file
+  cmd = "sudo fswebcam -c fswebcam.cfg %s" % image_file
   wait_in_secs = random.randint(0,2)*0.25
   time.sleep(wait_in_secs)
-  writelog(wait_in_secs)
+  writelog(image_file)
   subprocess.Popen(cmd, shell=True)
-  image_file_saved_flag = True
-  time.sleep(2)
+  #args = shlex.split(cmd)
+  #subprocess.call(args)
+  #time.sleep(4)
+
+  
 
 def save_a_video():
   global video_file
@@ -116,9 +138,9 @@ def save_a_video():
 
 
 def squirrel_seems_to_have_had_enough():
-  global peanut_count, peanut_count_old, image_file_saved_flag
+  global peanut_count, peanut_count_old, image_file_saved_flag, image_file
 
-  trigger_time = time.strftime("%H:%M:%S UTC+2")
+  trigger_time = time.strftime("%H:%M:%S %Z")
   writelog('Squirrel seems to have had enough') 
   # More than one nut?
   if peanut_count == 2:
@@ -137,7 +159,11 @@ def squirrel_seems_to_have_had_enough():
     writelog('Within diff')
     writelog(tweet_text)
     writelog(npm)
+    # trigger_date = time.strftime("%Y-%M-%D", lid_open_timestamp)
+    # print(trigger_date)
+    # writedata(date = trigger_date, time = trigger_time, nuts = peanut_count*0.5, duration = diff_time)
     send_a_tweet_with_image( tweet_text )
+    image_file = 'None'
     update_thingspeak("&field1=%d&field2=%.1f&field3=%.2f" % (peanut_count*0.5, 0, npm))
 
   peanut_count_old = peanut_count
@@ -147,9 +173,11 @@ def squirrel_seems_to_have_had_enough():
 
 
 def lid_open(chn):
-  global lid_open_timestamp, starts_eating_timestamp, squirrel_is_present, peanut_count 
+  global image_file, image_file_saved_flag, lid_open_timestamp, starts_eating_timestamp, squirrel_is_present, peanut_count 
   
   writelog('Lid has been opened')
+
+
   squirrel_is_present = True
   # To eat a nut, you need at least 5 seconds
   if time.time() - lid_open_timestamp > 5:
@@ -158,13 +186,24 @@ def lid_open(chn):
     Display.Show([0x7f,0x7f,peanut_count/10,peanut_count%10])
     writelog(peanut_count)
 
+    if os.path.isfile(image_file) is False:
+      image_file_saved_flag = False
+      writelog('Image file not found')
+    else:
+      image_file_saved_flag = True
+      writelog('Image file exists')
+
   lid_open_timestamp = time.time() 
   
   if peanut_count == 1:
     starts_eating_timestamp = time.time()
-    if image_file_saved_flag is False:
-      save_a_image()
+
+  if image_file_saved_flag is False:
+    save_a_image()
     #save_a_video()
+
+  writelog('end lid_open')
+  
 
 
 def loop():
@@ -191,20 +230,14 @@ def loop():
           Display.ShowDoublepoint(1)
       except:
         writelog('Ooops, display exception.')
-      # Write a alive message to logfile every 10 minutes
-      if not int(time.time())%600: 
+      # Write a alive message to logfile every 12 hours 
+      if not int(time.time())%(12*3600): 
         if flag_writelog:
           writelog('Waiting for a squirrel to appear.')
         flag_writelog = False
       else:
         flag_writelog = True
 
-
-def destroy():
-  writelog('Destroy')
-  Display.Clear()
-  GPIO.cleanup() # Release resource
-  
 
 
 if __name__ == '__main__': # Program start from here
@@ -213,4 +246,3 @@ if __name__ == '__main__': # Program start from here
     loop()
   except KeyboardInterrupt: # When 'Ctrl+C' is pressed, the child program destroy() will be executed.
     destroy()
-
